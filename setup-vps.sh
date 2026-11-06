@@ -10,9 +10,17 @@ CODE_SERVER_PORT="8080"
 echo "=== [1/6] CẬP NHẬT HỆ THỐNG & CÀI TIỆN ÍCH CƠ BẢN ==="
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get upgrade -y
+
+# Cài đặt software-properties-common để hỗ trợ add-apt-repository
+apt-get install -y software-properties-common apt-transport-https ca-certificates gnupg curl wget git jq ufw htop
+
+# Bật repo universe và PPA cho fastfetch trên Ubuntu 24.04
+add-apt-repository universe -y
+add-apt-repository ppa:zhangsongcui3371/fastfetch -y
+apt-get update
+
 apt-get install -y \
-    curl wget git jq ufw htop fastfetch \
-    software-properties-common apt-transport-https ca-certificates gnupg \
+    fastfetch \
     build-essential make zlib1g-dev libssl-dev libffi-dev libpq-dev
 
 echo "=== [2/6] CÀI ĐẶT PYTHON 3 & CÔNG CỤ BUILD ==="
@@ -34,7 +42,7 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 systemctl enable --now docker
 
-echo "=== [5/6] CÀI ĐẶT CODE-SERVER & TIỆN ÍCH EXTENSION ==="
+echo "=== [5/6] CÀI ĐẶT CODE-SERVER & EXTENSION KILO ==="
 # Cài đặt code-server bản chính thức
 curl -fsSL https://code-server.dev/install.sh | sh
 
@@ -47,12 +55,12 @@ password: ${CODE_SERVER_PASSWORD}
 cert: false
 EOF
 
-# Kích hoạt và chạy service cho user root
+# Kích hoạt và chạy service code-server cho user root
 systemctl enable --now code-server@root
 
-# Cài extension Kilo Code vào code-server (qua Open-VSX)
+# Cài extension Kilo Code vào code-server
 echo "Đang cài đặt extension Kilo Code..."
-code-server --install-extension kilocode.kilo-code || echo "Cảnh báo: Hãy cài extension Kilo Code thủ công trên giao diện nếu mạng timeout."
+code-server --install-extension kilocode.kilo-code || echo "Lưu ý: Có thể cài extension Kilo Code thủ công trên giao diện nếu mạng timeout."
 
 echo "=== [6/6] CẤU HÌNH TƯỜNG LỬA (UFW) ==="
 ufw allow OpenSSH
@@ -64,7 +72,7 @@ echo "                   SETUP HOÀN TẤT!                        "
 echo "=========================================================="
 echo "1. Code Server Web UI: http://<IP_VPS>:${CODE_SERVER_PORT}"
 echo "   Password: ${CODE_SERVER_PASSWORD}"
-echo "2. VS Code Remote SSH: Đã sẵn sàng (SSH trực tiếp bằng root qua port 22)."
-echo "3. Kiểm tra thông số máy: Gõ lệnh 'fastfetch' hoặc 'htop'"
-echo "4. Docker: Gõ 'docker compose version' để kiểm tra."
+echo "2. VS Code Remote SSH: Kết nối trực tiếp qua SSH root: ssh root@<IP_VPS>"
+echo "3. Kiểm tra hệ thống: gõ 'fastfetch' hoặc 'htop'"
+echo "4. Kiểm tra Docker: gõ 'docker compose version'"
 echo "=========================================================="
